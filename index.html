@@ -292,7 +292,6 @@ document.getElementById('tbtn').addEventListener('touchstart',e=>{e.preventDefau
 const joy={active:false,id:-1,bx:0,by:0,tx:0,ty:0};
 const JR=52; // joystick radius
 let joyDX=0,joyDY=0;
-const cvs=document.getElementById('c');
 cvs.addEventListener('touchstart',e=>{
   e.preventDefault();
   Array.from(e.changedTouches).forEach(t=>{
