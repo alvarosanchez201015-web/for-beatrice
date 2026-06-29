@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For Beatrice 💕</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #ffe0f0, #ffc8e8, #ffb0e0);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Floating hearts background */
+    .hearts-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .heart-float {
+      position: absolute;
+      bottom: -50px;
+      font-size: 1.5rem;
+      animation: floatUp linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes floatUp {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+      100% { transform: translateY(-110vh) rotate(30deg); opacity: 0; }
+    }
+
+    /* Screens */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 10;
+      padding: 2rem;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 30px;
+      padding: 3rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(255, 100, 160, 0.25);
+      border: 2px solid rgba(255, 180, 220, 0.5);
+    }
+
+    .emoji-big {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+      animation: bounce 1.2s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #d63384;
+      font-size: 2rem;
+      margin-bottom: 0.6rem;
+      text-shadow: 2px 2px 0 rgba(255,180,220,0.6);
+    }
+
+    p {
+      color: #b5006e;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 1.8rem;
+      font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff6eb4, #ff3d9a);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.85rem 2.4rem;
+      font-size: 1.1rem;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255, 80, 140, 0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin: 0.4rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 28px rgba(255, 80, 140, 0.5);
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-ghost {
+      background: transparent;
+      border: 2px solid #ff6eb4;
+      color: #d63384;
+      box-shadow: none;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255,110,180,0.1);
+      box-shadow: 0 4px 16px rgba(255,80,140,0.2);
+    }
+
+    /* Step 2 choice buttons */
+    .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
+
+    /* Progress dots */
+    .dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(214,51,132,0.25);
+      transition: background 0.4s;
+    }
+
+    .dot.active { background: #d63384; }
+
+    /* Final screen */
+    #screen-final .card {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(255, 120, 180, 0.7);
+    }
+
+    .love-title {
+      font-family: 'Pacifico', cursive;
+      font-size: 2.6rem;
+      color: #d63384;
+      text-shadow: 3px 3px 0 rgba(255,180,220,0.8);
+      animation: pulse 1.5s ease infinite;
+      margin: 0.5rem 0 1rem;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.04); }
+    }
+
+    .sparkle-row {
+      font-size: 2rem;
+      letter-spacing: 0.3rem;
+      animation: spin-slow 4s linear infinite;
+      display: block;
+      margin: 0.5rem 0;
+    }
+
+    @keyframes spin-slow {
+      0%   { transform: rotate(-3deg); }
+      50%  { transform: rotate(3deg); }
+      100% { transform: rotate(-3deg); }
+    }
+
+    .sub-msg {
+      font-size: 1rem;
+      color: #b5006e;
+      opacity: 0.85;
+      margin-top: 0.5rem;
+    }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      width: 10px; height: 10px;
+      top: -10px;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+      z-index: 999;
+    }
+
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
+    }
+
+    /* No button chase */
+    #no-btn {
+      position: relative;
+      transition: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating hearts background -->
+  <div class="hearts-bg" id="hearts-bg"></div>
+
+  <!-- SCREEN 1: Welcome -->
+  <div class="screen active" id="screen-1">
+    <div class="card">
+      <span class="emoji-big">🌸</span>
+      <h1>Hey you!</h1>
+      <p>I made something special just for you.<br>Are you ready to see it?</p>
+      <button class="btn" onclick="goTo(2)">Yes, I'm ready! 💕</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Question -->
+  <div class="screen" id="screen-2">
+    <div class="card">
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <span class="emoji-big">🦋</span>
+      <h1>Quick question...</h1>
+      <p>Which one of these is the cutest thing in the world?</p>
+      <div class="choices">
+        <button class="btn btn-ghost" onclick="goTo(3)">🐣 Baby chick</button>
+        <button class="btn btn-ghost" onclick="goTo(3)">🐰 Tiny bunny</button>
+        <button class="btn btn-ghost" onclick="goTo(3)">🌸 Cherry blossoms</button>
+        <button class="btn" onclick="goTo(3)">✨ You!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Do you know -->
+  <div class="screen" id="screen-3">
+    <div class="card">
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot active"></div>
+        <div class="dot"></div>
+      </div>
+      <span class="emoji-big">💌</span>
+      <h1>Do you know...</h1>
+      <p>...how special you are to me?</p>
+      <button class="btn" onclick="goTo(4)">Tell me! 🥹</button>
+      <br/>
+      <button class="btn btn-ghost" id="no-btn" onclick="runAway()">Maybe not...</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: Final reveal -->
+  <div class="screen" id="screen-final">
+    <div class="card">
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot active"></div>
+        <div class="dot active"></div>
+      </div>
+      <span class="emoji-big">💖</span>
+      <div class="love-title">I love you, Beatrice!</div>
+      <span class="sparkle-row">✨ 🌸 💕 🌸 ✨</span>
+      <p style="margin-top:1rem; margin-bottom:0.5rem;">
+        You make every single day brighter,<br>
+        and I'm so lucky to have you. 🥰
+      </p>
+      <p class="sub-msg">Always &amp; forever 💗</p>
+    </div>
+  </div>
+
+  <script>
+    // Floating hearts
+    const heartsContainer = document.getElementById('hearts-bg');
+    const heartEmojis = ['💕','💖','💗','💓','🌸','✨','💝','🦋'];
+
+    function spawnHeart() {
+      const h = document.createElement('span');
+      h.className = 'heart-float';
+      h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+      const dur = 5 + Math.random() * 7;
+      h.style.animationDuration = dur + 's';
+      h.style.animationDelay = (Math.random() * 3) + 's';
+      heartsContainer.appendChild(h);
+      setTimeout(() => h.remove(), (dur + 3) * 1000);
+    }
+
+    setInterval(spawnHeart, 400);
+    for (let i = 0; i < 10; i++) spawnHeart();
+
+    // Screen transition
+    function goTo(n) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = n === 4 ? 'screen-final' : 'screen-' + n;
+      document.getElementById(target).classList.add('active');
+      if (n === 4) launchConfetti();
+    }
+
+    // "No" button runs away
+    let runAwayCount = 0;
+    function runAway() {
+      runAwayCount++;
+      const btn = document.getElementById('no-btn');
+      const card = btn.closest('.card');
+      const maxX = card.offsetWidth  - btn.offsetWidth  - 20;
+      const maxY = card.offsetHeight - btn.offsetHeight - 20;
+      btn.style.position = 'absolute';
+      btn.style.left = Math.max(10, Math.random() * maxX) + 'px';
+      btn.style.top  = Math.max(10, Math.random() * maxY) + 'px';
+      if (runAwayCount >= 3) {
+        btn.style.display = 'none';
+      }
+    }
+
+    // Confetti burst
+    function launchConfetti() {
+      const colors = ['#ff6eb4','#ff3d9a','#ffb8d9','#d63384','#fff0f7','#ff85c8'];
+      for (let i = 0; i < 80; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.width  = (6 + Math.random() * 8) + 'px';
+        c.style.height = (6 + Math.random() * 8) + 'px';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        const dur = 2.5 + Math.random() * 2.5;
+        c.style.animationDuration = dur + 's';
+        c.style.animationDelay   = (Math.random() * 1.2) + 's';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), (dur + 1.5) * 1000);
+      }
+    }
+  </script>
+</body>
+</html>
