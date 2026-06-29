@@ -119,9 +119,9 @@ const TREES=[
   {x:1830,y:440},{x:1825,y:610},{x:1835,y:780},
   {x:140,y:1240},{x:320,y:1280},{x:530,y:1255},{x:740,y:1280},
   {x:360,y:1020},
-  // top right forest
-  {x:1150,y:85},{x:1280,y:70},{x:1420,y:90},{x:1560,y:75},{x:1700,y:85},{x:1830,y:95},
-  {x:1200,y:195},{x:1350,y:185},{x:1500,y:200},{x:1660,y:190},{x:1800,y:205},
+  // top right forest (trees on café removed)
+  {x:1150,y:85},{x:1700,y:85},{x:1830,y:95},
+  {x:1200,y:195},{x:1660,y:190},{x:1800,y:205},
 ];
 
 const FLOWERS=(()=>{
@@ -1117,6 +1117,30 @@ function drawCastleThrone(cx2,cy2,sc,wx,wy,big,label){
   ctx.fillText(label,cx2(wx),cy2(wy+th+19));
 }
 
+function drawCafePath(wx,wy){
+  if(!vis(wx,wy+120,200)) return;
+  // Cobblestone pavers from café door (wy) going south to wy+250
+  const stones=[
+    {ox:-18,oy:8,w:34,h:18},{ox:10,oy:10,w:28,h:16},
+    {ox:-22,oy:32,w:30,h:17},{ox:8,oy:34,w:32,h:16},
+    {ox:-16,oy:56,w:36,h:18},{ox:14,oy:58,w:26,h:16},
+    {ox:-20,oy:80,w:32,h:17},{ox:10,oy:82,w:30,h:17},
+    {ox:-18,oy:106,w:34,h:18},{ox:8,oy:108,w:28,h:16},
+    {ox:-22,oy:130,w:30,h:18},{ox:10,oy:132,w:32,h:16},
+    {ox:-16,oy:155,w:36,h:18},{ox:12,oy:157,w:28,h:16},
+    {ox:-20,oy:178,w:30,h:17},{ox:10,oy:180,w:34,h:17},
+    {ox:-18,oy:202,w:32,h:18},{ox:8,oy:204,w:30,h:16},
+    {ox:-22,oy:226,w:34,h:17},{ox:10,oy:228,w:28,h:17},
+  ];
+  const x=sxf(wx),y=syf(wy);
+  stones.forEach(s=>{
+    ctx.fillStyle='#c8b89a';rr(x+s.ox,y+s.oy,s.w,s.h,4);ctx.fill();
+    ctx.strokeStyle='#b0a080';ctx.lineWidth=1;rr(x+s.ox,y+s.oy,s.w,s.h,4);ctx.stroke();
+    // subtle highlight
+    ctx.fillStyle='rgba(255,255,255,.18)';rr(x+s.ox+2,y+s.oy+2,s.w-4,6,2);ctx.fill();
+  });
+}
+
 function drawAmourCafe(){
   const bx=sxf(1330),by=syf(95),bw=240,bh=175;
   if(!vis(1450,182,150)) return;
@@ -1140,6 +1164,8 @@ function drawAmourCafe(){
   ctx.fillStyle='rgba(255,255,255,.95)';rr(bx+bw/2-sw/2,by+8,sw,22,5);ctx.fill();
   ctx.fillStyle='#c2006e';ctx.font='bold 11px "Nunito",sans-serif';ctx.textAlign='center';
   ctx.fillText('💕 Amour Café',bx+bw/2,by+23);
+  // Stone pathway from café door going south
+  drawCafePath(1450,270);
   // Kiss spot
   drawKissSpot(1450,335);
 }
