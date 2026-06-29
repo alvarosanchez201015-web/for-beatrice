@@ -266,7 +266,7 @@ function tryInteract(){
   // Kiss spot
   if(Math.hypot(pl.x-1450,pl.y-325)<50){showKissMsg();return;}
   // Pool table memory
-  if(Math.hypot(pl.x-1450,pl.y-1060)<55){showPoolMsg();return;}
+  if(Math.hypot(pl.x-1600,pl.y-1020)<90){showPoolMsg();return;}
   const n=nearNPC();
   if(!n) return;
   if(n==='alvaro') openAlvaroDlg(); else openDlg(n);
@@ -474,7 +474,7 @@ function update(){
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.2;p.life--;if(p.life<=0)parts.splice(i,1);}
   const near=nearNPC();
   const cafNear=Math.hypot(pl.x-1450,pl.y-280)<65;
-  const poolNear=Math.hypot(pl.x-1450,pl.y-1060)<55&&!poolMsgShown;
+  const poolNear=Math.hypot(pl.x-1600,pl.y-1020)<90&&!poolMsgShown;
   const kissNear=Math.hypot(pl.x-1450,pl.y-325)<50&&!kissSpotShown;
   const anyNear=near||cafNear||poolNear||kissNear;
   document.getElementById('hint').style.display=anyNear?'block':'none';
