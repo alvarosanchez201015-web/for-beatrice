@@ -267,6 +267,8 @@ function tryInteract(){
   if(Math.hypot(pl.x-1450,pl.y-280)<65){enterCafe();return;}
   // Kiss spot
   if(Math.hypot(pl.x-1450,pl.y-325)<50){showKissMsg();return;}
+  // Pool table memory
+  if(Math.hypot(pl.x-1450,pl.y-1060)<55){showPoolMsg();return;}
   const n=nearNPC();
   if(!n) return;
   if(n==='alvaro') openAlvaroDlg(); else openDlg(n);
@@ -369,6 +371,20 @@ function showKissMsg(){
   document.getElementById('dlg-fb').textContent='';
 }
 
+/* ─── POOL TABLE MEMORY ─── */
+let poolMsgShown=false;
+function showPoolMsg(){
+  if(poolMsgShown) return;
+  poolMsgShown=true;
+  gst='dialog';
+  document.getElementById('dlg-name').textContent='🎱 Pool Table Memory';
+  document.getElementById('dlg-txt').innerHTML='The first time Beatrice won Alvaro in a game of pool... 2 - 1 🏆<br><span style="font-size:.75rem;opacity:.65;font-style:italic">...I was going easy</span>';
+  document.getElementById('dlg-fb').textContent='';
+  const o=document.getElementById('dlg-opts');o.innerHTML='';
+  const b=mkOpt('haha sure you were 😏');b.onclick=closeDlg;o.appendChild(b);
+  document.getElementById('dlg').classList.add('open');
+}
+
 /* ─── CAFÉ ─── */
 function enterCafe(){
   gst='cafe';cafeScene=0;cafeTimer=0;cafeMsgIdx=0;
@@ -428,7 +444,7 @@ function updPeacock(){
 
 /* ─── START ─── */
 function startGame(){
-  NPCS.forEach(n=>n.done=false);collected=0;parts=[];kissSpotShown=false;
+  NPCS.forEach(n=>n.done=false);collected=0;parts=[];kissSpotShown=false;poolMsgShown=false;
   ALVARO_CHAR.visible=false;ALVARO_CHAR.done=false;
   pl.x=900;pl.y=1000;gst='playing';
   document.getElementById('s-intro').classList.remove('show');
@@ -460,8 +476,11 @@ function update(){
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.2;p.life--;if(p.life<=0)parts.splice(i,1);}
   const near=nearNPC();
   const cafNear=Math.hypot(pl.x-1450,pl.y-280)<65;
-  document.getElementById('hint').style.display=(near||cafNear)?'block':'none';
-  if(near||cafNear) document.getElementById('hint').textContent=near?'Press E to talk':'Press E to enter Amour Café';
+  const poolNear=Math.hypot(pl.x-1450,pl.y-1060)<55&&!poolMsgShown;
+  const kissNear=Math.hypot(pl.x-1450,pl.y-325)<50&&!kissSpotShown;
+  const anyNear=near||cafNear||poolNear||kissNear;
+  document.getElementById('hint').style.display=anyNear?'block':'none';
+  if(anyNear) document.getElementById('hint').textContent=near?'Press E to talk':cafNear?'Press E to enter Amour Café':poolNear?'Press E to relive the pool memory 🎱':'Press E to remember the first kiss 💋';
 }
 
 function updateCafe(){
