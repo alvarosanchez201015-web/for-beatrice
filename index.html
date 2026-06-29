@@ -178,6 +178,8 @@ const WALLS=[
   {x:1330,y:95,w:240,h:175},
   // British Embassy (BOTTOM-RIGHT) — no outer fence collision, just building block
   {x:1230,y:915,w:290,h:210}, // building interior only
+  // Castle house (small, walkable-into)
+  {x:638,y:758,w:44,h:30},
 ];
 
 /* ─── Peacock (now bottom-right embassy grounds) ─── */
@@ -206,10 +208,22 @@ const CAFE_MSGS=[
   'and ofc... the moment Alvaro gained aura 😎✨',
 ];
 
+/* ─── DOGS (wander central area) ─── */
+const DOGS=[
+  {name:'Luna',x:820,y:660,dx:.4,dy:.2,timer:0,interval:120,wt:0},
+  {name:'Teddy',x:980,y:750,dx:-.35,dy:.45,timer:0,interval:140,wt:0},
+  {name:'Toto',x:870,y:800,dx:.3,dy:-.4,timer:0,interval:100,wt:0},
+];
+
+/* ─── CASTLE ─── */
+const CAS_W=820,CAS_H=520;
+const casPl={x:410,y:420,w:20,h:26,moving:false,wt:0};
+const CAS_EXIT={x:330,y:470,w:160,h:50};
+
 /* ─── STATE ─── */
-let gst='idle'; // idle | playing | dialog | cafe
+let gst='idle'; // idle | playing | dialog | cafe | castle
 let dlgNPC=null,dlgStage='',dlgPage=0,collected=0,parts=[];
-let kissSpotShown=false,noRunCount=0;
+let kissSpotShown=false,noRunCount=0,khanMemShown=false,bloomShown=false;
 
 /* ─── PLAYER (world) ─── */
 const pl={x:900,y:1000,w:20,h:26,moving:false,wt:0};
@@ -260,6 +274,7 @@ function nearNPC(){
 function tryInteract(){
   if(gst==='dialog') return;
   if(gst==='cafe'){tryCafeInteract();return;}
+  if(gst==='castle'){if(aabb(casPl.x-10,casPl.y-13,20,26,CAS_EXIT.x,CAS_EXIT.y,CAS_EXIT.w,CAS_EXIT.h)) exitCastle(); return;}
   if(gst!=='playing') return;
   // Café door
   if(Math.hypot(pl.x-1450,pl.y-280)<65){enterCafe();return;}
@@ -267,6 +282,12 @@ function tryInteract(){
   if(Math.hypot(pl.x-1450,pl.y-325)<50){showKissMsg();return;}
   // Pool table memory
   if(Math.hypot(pl.x-1600,pl.y-1020)<90){showPoolMsg();return;}
+  // Khan Market memory
+  if(Math.hypot(pl.x-260,pl.y-935)<85){showKhanMem();return;}
+  // Bloom Café
+  if(Math.hypot(pl.x-126,pl.y-935)<90){showBloomCafe();return;}
+  // Castle house
+  if(Math.hypot(pl.x-660,pl.y-770)<55){enterCastle();return;}
   const n=nearNPC();
   if(!n) return;
   if(n==='alvaro') openAlvaroDlg(); else openDlg(n);
@@ -383,6 +404,66 @@ function showPoolMsg(){
   document.getElementById('dlg').classList.add('open');
 }
 
+/* ─── KHAN MARKET MEMORY ─── */
+function showKhanMem(){
+  if(khanMemShown) return;
+  khanMemShown=true;
+  gst='dialog';
+  document.getElementById('dlg-name').textContent='🛍️ Khan Market Memory';
+  document.getElementById('dlg-txt').innerHTML='The first time Alvaro left Beatrice hanging... 😂<br><span style="font-size:.75rem;opacity:.6;font-style:italic">aura by Alvaro</span>';
+  document.getElementById('dlg-fb').textContent='';
+  const o=document.getElementById('dlg-opts');o.innerHTML='';
+  const b=mkOpt('Continue →');b.onclick=closeDlg;o.appendChild(b);
+  document.getElementById('dlg').classList.add('open');
+}
+function showBloomCafe(){
+  if(bloomShown) return;
+  bloomShown=true;
+  gst='dialog';
+  document.getElementById('dlg-name').textContent='🌸 Bloom Café';
+  document.getElementById('dlg-txt').textContent='Alvaro and Beatrice first hanging out together alone... just the two of them 💕';
+  document.getElementById('dlg-fb').textContent='';
+  const o=document.getElementById('dlg-opts');o.innerHTML='';
+  const b=mkOpt('Continue →');b.onclick=closeDlg;o.appendChild(b);
+  document.getElementById('dlg').classList.add('open');
+}
+
+/* ─── CASTLE ─── */
+function enterCastle(){gst='castle';casPl.x=410;casPl.y=420;casPl.moving=false;casPl.wt=0;document.getElementById('hint').style.display='none';}
+function exitCastle(){gst='playing';document.getElementById('hint').style.display='none';}
+function updateCastle(){
+  let dx=0,dy=0;
+  if(K['ArrowLeft']||K['a']||K['A']) dx-=1;if(K['ArrowRight']||K['d']||K['D']) dx+=1;
+  if(K['ArrowUp']||K['w']||K['W']) dy-=1;if(K['ArrowDown']||K['s']||K['S']) dy+=1;
+  if(dx&&dy){dx*=.707;dy*=.707;}
+  if(dx||dy){
+    const nx=casPl.x+dx*SPD,ny=casPl.y+dy*SPD;
+    if(nx>12&&nx<CAS_W-12) casPl.x=nx;
+    if(ny>12&&ny<CAS_H-12) casPl.y=ny;
+    casPl.moving=true;casPl.wt+=.15;
+  } else casPl.moving=false;
+  const nearExit=aabb(casPl.x-10,casPl.y-13,20,26,CAS_EXIT.x,CAS_EXIT.y,CAS_EXIT.w,CAS_EXIT.h);
+  document.getElementById('hint').style.display=nearExit?'block':'none';
+  if(nearExit) document.getElementById('hint').textContent='Walk to exit palace 👑';
+  if(nearExit) exitCastle();
+}
+
+/* ─── DOGS ─── */
+function updateDogs(){
+  DOGS.forEach(d=>{
+    d.timer++;
+    if(d.timer>=d.interval){
+      d.timer=0;d.interval=80+Math.random()*130;
+      const a=Math.random()*Math.PI*2;const sp=.25+Math.random()*.35;
+      d.dx=Math.cos(a)*sp;d.dy=Math.sin(a)*sp;
+    }
+    const nx=d.x+d.dx,ny=d.y+d.dy;
+    if(nx>580&&nx<1180&&ny>480&&ny<950&&canGo(nx,ny)){d.x=nx;d.y=ny;}
+    else{d.dx*=-.6;d.dy*=-.6;}
+    d.wt+=.2;
+  });
+}
+
 /* ─── CAFÉ ─── */
 function enterCafe(){
   gst='cafe';cafeScene=0;cafeTimer=0;cafeMsgIdx=0;
@@ -442,7 +523,7 @@ function updPeacock(){
 
 /* ─── START ─── */
 function startGame(){
-  NPCS.forEach(n=>n.done=false);collected=0;parts=[];kissSpotShown=false;poolMsgShown=false;
+  NPCS.forEach(n=>n.done=false);collected=0;parts=[];kissSpotShown=false;poolMsgShown=false;khanMemShown=false;bloomShown=false;
   ALVARO_CHAR.visible=false;ALVARO_CHAR.done=false;
   pl.x=900;pl.y=1000;gst='playing';
   document.getElementById('s-intro').classList.remove('show');
@@ -460,6 +541,7 @@ document.getElementById('btn-kiss-replay').onclick=startGame;
 /* ─── UPDATE ─── */
 function update(){
   if(gst==='cafe'){updateCafe();return;}
+  if(gst==='castle'){updateCastle();return;}
   if(gst!=='playing') return;
   let dx=0,dy=0;
   if(K['ArrowLeft']||K['a']||K['A']) dx-=1;if(K['ArrowRight']||K['d']||K['D']) dx+=1;
@@ -470,15 +552,21 @@ function update(){
     if(canGo(pl.x,pl.y+dy*SPD)) pl.y+=dy*SPD;
     pl.moving=true;pl.wt+=.15;
   } else pl.moving=false;
-  updCam();updPeacock();
+  updCam();updPeacock();updateDogs();
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.2;p.life--;if(p.life<=0)parts.splice(i,1);}
   const near=nearNPC();
   const cafNear=Math.hypot(pl.x-1450,pl.y-280)<65;
   const poolNear=Math.hypot(pl.x-1600,pl.y-1020)<90&&!poolMsgShown;
   const kissNear=Math.hypot(pl.x-1450,pl.y-325)<50&&!kissSpotShown;
-  const anyNear=near||cafNear||poolNear||kissNear;
+  const khanNear=Math.hypot(pl.x-260,pl.y-935)<85&&!khanMemShown;
+  const bloomNear=Math.hypot(pl.x-126,pl.y-935)<90&&!bloomShown;
+  const castleNear=Math.hypot(pl.x-660,pl.y-770)<55;
+  const anyNear=near||cafNear||poolNear||kissNear||khanNear||bloomNear||castleNear;
   document.getElementById('hint').style.display=anyNear?'block':'none';
-  if(anyNear) document.getElementById('hint').textContent=near?'Press E to talk':cafNear?'Press E to enter Amour Café':poolNear?'Press E to relive the pool memory 🎱':'Press E to remember the first kiss 💋';
+  if(anyNear) document.getElementById('hint').textContent=
+    near?'Press E to talk':cafNear?'Press E to enter Amour Café':poolNear?'Press E to relive the pool memory 🎱':
+    kissNear?'Press E to remember the first kiss 💋':khanNear?'Press E for a Khan Market memory':
+    bloomNear?'Press E to visit Bloom Café 🌸':'Press E to enter the palace 👑';
 }
 
 function updateCafe(){
@@ -850,14 +938,29 @@ function drawKhanMarket(){
   ctx.fillStyle='#f5e8d0';rr(mx,my,mw,mh,8);ctx.fill();
   ctx.strokeStyle='#c4a265';ctx.lineWidth=2.5;rr(mx,my,mw,mh,8);ctx.stroke();
   ctx.fillStyle='#e0cfa8';ctx.fillRect(mx+10,my+mh/2-14,mw-20,28);
-  ['Full Circle 📚','Fabindia 👗','Khan Chacha 🍢','Amici 🍕'].forEach((name,i)=>{
+  // Top row — Bloom Café replaces slot 0 (Full Circle)
+  ['Bloom Café 🌸','Fabindia 👗','Khan Chacha 🍢','Amici 🍕'].forEach((name,i)=>{
     const sw=78,sx2=mx+12+i*84,sy2=my+10;
-    ctx.fillStyle=['#ffe0c8','#e8d5ff','#ffd5e0','#d5f5d5'][i];
-    rr(sx2,sy2,sw,mh/2-25,5);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.1)';ctx.lineWidth=1;rr(sx2,sy2,sw,mh/2-25,5);ctx.stroke();
-    ctx.fillStyle='rgba(200,230,255,.6)';rr(sx2+8,sy2+8,sw-16,20,3);ctx.fill();
-    ctx.fillStyle='#5a3a1a';ctx.font='bold 8px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText(name,sx2+sw/2,sy2+mh/2-30);
+    if(i===0){
+      // Bloom Café — glowing special stall
+      const g=ctx.createLinearGradient(sx2,sy2,sx2+sw,sy2+mh/2-25);
+      g.addColorStop(0,'#ffe0f8');g.addColorStop(1,'#ffc0f0');
+      ctx.fillStyle=g;rr(sx2,sy2,sw,mh/2-25,5);ctx.fill();
+      ctx.shadowColor='rgba(255,100,200,.5)';ctx.shadowBlur=8;
+      ctx.strokeStyle='#ff80d0';ctx.lineWidth=2;rr(sx2,sy2,sw,mh/2-25,5);ctx.stroke();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(255,220,255,.8)';rr(sx2+8,sy2+8,sw-16,20,3);ctx.fill();
+      ctx.fillStyle='#c2006e';ctx.font='bold 7px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText(name,sx2+sw/2,sy2+mh/2-30);
+      // Tiny flowers
+      ['🌸','🌸'].forEach((f,fi)=>{ctx.font='8px serif';ctx.fillText(f,sx2+8+fi*(sw-16),sy2+10);});
+    } else {
+      ctx.fillStyle=['#ffe0c8','#e8d5ff','#ffd5e0','#d5f5d5'][i];
+      rr(sx2,sy2,sw,mh/2-25,5);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.1)';ctx.lineWidth=1;rr(sx2,sy2,sw,mh/2-25,5);ctx.stroke();
+      ctx.fillStyle='rgba(200,230,255,.6)';rr(sx2+8,sy2+8,sw-16,20,3);ctx.fill();
+      ctx.fillStyle='#5a3a1a';ctx.font='bold 8px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText(name,sx2+sw/2,sy2+mh/2-30);
+    }
   });
-  ['Cafe CCD ☕','Habibi 🍜','The Shop 🛍️','Books & More 📖'].forEach((name,i)=>{
+  ['Habibi 🍜','The Shop 🛍️','Books & More 📖','Naivedyam 🍛'].forEach((name,i)=>{
     const sw=78,sx2=mx+12+i*84,sy2=my+mh/2+18;
     ctx.fillStyle=['#c8e8ff','#ffe8c8','#ffc8e8','#e8ffc8'][i];
     rr(sx2,sy2,sw,mh/2-26,5);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.1)';ctx.lineWidth=1;rr(sx2,sy2,sw,mh/2-26,5);ctx.stroke();
@@ -871,6 +974,140 @@ function drawKhanMarket(){
   ctx.strokeStyle='rgba(255,200,50,.6)';ctx.lineWidth=1;
   ctx.beginPath();for(let i=0;i<=9;i++) ctx.lineTo(mx+i*(mw/9),my+30+Math.sin(i)*8);ctx.stroke();
   for(let i=0;i<=9;i++){ctx.fillStyle='rgba(255,220,60,.9)';ctx.beginPath();ctx.arc(mx+i*(mw/9),my+30+Math.sin(i)*8,2.5,0,Math.PI*2);ctx.fill();}
+  // Floating memory above entrance
+  if(!khanMemShown) drawKhanMemMarker(sxf(260),syf(920));
+  // Bloom Café memory marker (top left shop area)
+  if(!bloomShown) drawBloomMarker(sxf(126),syf(920));
+}
+
+function drawKhanMemMarker(x,y){
+  const bob=Math.sin(Date.now()/380)*5,pulse=.6+Math.sin(Date.now()/380)*.4;
+  ctx.globalAlpha=pulse;
+  ctx.fillStyle='#ff8c00';ctx.beginPath();ctx.arc(x,y+bob,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,140,0,.2)';ctx.beginPath();ctx.arc(x,y+bob,20+Math.sin(Date.now()/380)*3,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.font='11px serif';ctx.textAlign='center';ctx.fillText('🛍️',x,y+bob+4);
+  ctx.fillStyle='rgba(255,255,255,.95)';rr(x-38,y+bob+14,76,16,8);ctx.fill();
+  ctx.fillStyle='#8b4400';ctx.font='bold 7px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText('Memory 🛍️',x,y+bob+25);
+}
+function drawBloomMarker(x,y){
+  const bob=Math.sin(Date.now()/320+1)*5,pulse=.6+Math.sin(Date.now()/320+1)*.4;
+  ctx.globalAlpha=pulse;
+  ctx.fillStyle='#ff80c0';ctx.beginPath();ctx.arc(x,y+bob,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,120,200,.2)';ctx.beginPath();ctx.arc(x,y+bob,19+Math.sin(Date.now()/320)*3,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.font='11px serif';ctx.textAlign='center';ctx.fillText('🌸',x,y+bob+4);
+  ctx.fillStyle='rgba(255,255,255,.95)';rr(x-42,y+bob+14,84,16,8);ctx.fill();
+  ctx.fillStyle='#c2006e';ctx.font='bold 7px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText('Bloom Café 🌸',x,y+bob+25);
+}
+function drawCastleHouse(wx,wy){
+  if(!vis(wx,wy,50)) return;
+  const x=sxf(wx),y=syf(wy);
+  const glow=.5+Math.sin(Date.now()/500)*.5;
+  ctx.shadowColor=`rgba(160,80,255,${glow})`;ctx.shadowBlur=12;
+  // Walls
+  ctx.fillStyle='#d4b0f0';rr(x-22,y-18,44,30,4);ctx.fill();
+  ctx.strokeStyle='#9050d0';ctx.lineWidth=2;rr(x-22,y-18,44,30,4);ctx.stroke();
+  ctx.shadowBlur=0;
+  // Roof
+  ctx.fillStyle='#8040c0';ctx.beginPath();ctx.moveTo(x-26,y-18);ctx.lineTo(x,y-40);ctx.lineTo(x+26,y-18);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#5020a0';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-26,y-18);ctx.lineTo(x,y-40);ctx.lineTo(x+26,y-18);ctx.closePath();ctx.stroke();
+  // Door
+  ctx.fillStyle='#6030a0';rr(x-7,y-4,14,16,3);ctx.fill();
+  // Windows
+  ctx.fillStyle='#ffe090';rr(x-18,y-14,10,10,2);ctx.fill();rr(x+8,y-14,10,10,2);ctx.fill();
+  // Crown
+  ctx.font='14px serif';ctx.textAlign='center';ctx.fillText('👑',x,y-42);
+  // Label
+  ctx.fillStyle='rgba(255,255,255,.95)';rr(x-36,y+14,72,16,8);ctx.fill();
+  ctx.fillStyle='#6030a0';ctx.font='bold 7px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText("Tika's Palace",x,y+25);
+}
+function drawDog(d){
+  if(!vis(d.x,d.y,30)) return;
+  const x=sxf(d.x),y=syf(d.y);
+  const bob=Math.sin(d.wt)*2,facing=d.dx>=0?1:-1;
+  ctx.fillStyle='rgba(0,0,0,.08)';ctx.beginPath();ctx.ellipse(x,y+9,11,4,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f7f7f7';ctx.beginPath();ctx.ellipse(x,y+bob,11,7,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#ddd';ctx.lineWidth=.8;ctx.beginPath();ctx.ellipse(x,y+bob,11,7,0,0,Math.PI*2);ctx.stroke();
+  const hx=x+facing*9,hy=y-7+bob;
+  ctx.fillStyle='#f7f7f7';ctx.beginPath();ctx.arc(hx,hy,7,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#ddd';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(hx,hy,7,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#e0c090';ctx.beginPath();ctx.ellipse(hx-facing*2,hy-5,3,5,-.3*facing,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#333';ctx.beginPath();ctx.arc(hx+facing*3,hy-1,1.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ffa0a0';ctx.beginPath();ctx.arc(hx+facing*6,hy+2,2,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f0f0f0';ctx.lineWidth=2.5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x-facing*10,y+bob);ctx.quadraticCurveTo(x-facing*17,y-10+bob,x-facing*13,y-16+bob);ctx.stroke();
+  const lw=Math.sin(d.wt)*3;
+  [[-5,lw],[1,-lw],[7,lw]].forEach(([lx,lo])=>{ctx.strokeStyle='#e8e8e8';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x+lx,y+6+bob);ctx.lineTo(x+lx,y+13+lo+bob);ctx.stroke();});
+  ctx.fillStyle='rgba(255,220,240,.9)';rr(x-20,y+14+bob,40,13,6);ctx.fill();
+  ctx.fillStyle='#c2006e';ctx.font='bold 7px "Nunito",sans-serif';ctx.textAlign='center';ctx.fillText(d.name,x,y+23+bob);
+}
+function drawCastle(){
+  const sc=Math.min(W/CAS_W,H/CAS_H)*.98;
+  const ox=(W-CAS_W*sc)/2,oy=(H-CAS_H*sc)/2;
+  function cx2(x){return ox+x*sc;} function cy2(y){return oy+y*sc;}
+  function rrs(x,y,w,h,r){rr(cx2(x),cy2(y),w*sc,h*sc,r*sc);}
+  // Stone floor
+  ctx.fillStyle='#7a6a5a';ctx.fillRect(cx2(0),cy2(0),CAS_W*sc,CAS_H*sc);
+  ctx.strokeStyle='rgba(0,0,0,.1)';ctx.lineWidth=1;
+  for(let i=0;i<CAS_W;i+=55){ctx.beginPath();ctx.moveTo(cx2(i),cy2(0));ctx.lineTo(cx2(i),cy2(CAS_H));ctx.stroke();}
+  for(let i=0;i<CAS_H;i+=55){ctx.beginPath();ctx.moveTo(cx2(0),cy2(i));ctx.lineTo(cx2(CAS_W),cy2(i));ctx.stroke();}
+  // Back stone wall
+  ctx.fillStyle='#5c4c3c';ctx.fillRect(cx2(0),cy2(0),CAS_W*sc,130*sc);
+  ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=1;
+  for(let i=0;i<CAS_W;i+=60){ctx.beginPath();ctx.moveTo(cx2(i),cy2(0));ctx.lineTo(cx2(i),cy2(130));ctx.stroke();}
+  for(let i=0;i<130;i+=30){ctx.beginPath();ctx.moveTo(cx2(0),cy2(i));ctx.lineTo(cx2(CAS_W),cy2(i));ctx.stroke();}
+  // Banners
+  [[120,'#8b0000'],[260,'#1a237e'],[560,'#1a237e'],[700,'#8b0000']].forEach(([bx,c])=>{
+    ctx.fillStyle=c;rrs(bx,0,22,85,2);ctx.fill();
+    ctx.font=`${13*sc}px serif`;ctx.textAlign='center';ctx.fillText('👑',cx2(bx+11),cy2(60));
+  });
+  // Red carpet
+  ctx.fillStyle='#7b0000';rrs(360,130,100,CAS_H-140,0);ctx.fill();
+  ctx.strokeStyle='#c8a000';ctx.lineWidth=2*sc;rrs(360,130,100,CAS_H-140,0);ctx.stroke();
+  // Thrones (left to right: Toto, Teddy, TIKA, Luna)
+  drawCastleThrone(cx2,cy2,sc,165,50,false,'Toto 🐾');
+  drawCastleThrone(cx2,cy2,sc,295,55,false,'Teddy 🐾');
+  drawCastleThrone(cx2,cy2,sc,410,20,true,'Tika 👑');
+  drawCastleThrone(cx2,cy2,sc,555,55,false,'Luna 🐾');
+  // Exit door
+  ctx.fillStyle='#5c3010';rrs(330,465,160,45,6);ctx.fill();
+  ctx.strokeStyle='#c8a000';ctx.lineWidth=2*sc;rrs(330,465,160,45,6);ctx.stroke();
+  ctx.fillStyle='#ffd700';ctx.font=`bold ${10*sc}px "Nunito",sans-serif`;ctx.textAlign='center';
+  ctx.fillText('Exit Palace ↓',cx2(410),cy2(492));
+  // Player
+  const px=cx2(casPl.x),py=cy2(casPl.y);
+  const bob=casPl.moving?Math.sin(casPl.wt)*2:0;
+  ctx.fillStyle='rgba(0,0,0,.1)';ctx.beginPath();ctx.ellipse(px,py+8*sc+bob,9*sc,3*sc,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#1565c0';ctx.beginPath();ctx.ellipse(px,py+2*sc+bob,9*sc,5*sc,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ff6eb4';rr(px-7*sc,py-18*sc+bob,14*sc,16*sc,3*sc);ctx.fill();
+  ctx.fillStyle='#ffe0b2';ctx.beginPath();ctx.arc(px,py-26*sc+bob,8*sc,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#c2006e';ctx.beginPath();ctx.arc(px-3*sc,py-33*sc+bob,6*sc,Math.PI,0);ctx.fill();
+  // Title overlay
+  ctx.fillStyle='rgba(0,0,0,.55)';rrs(260,8,300,30,8);ctx.fill();
+  ctx.fillStyle='#ffd700';ctx.font=`bold ${11*sc}px "Nunito",sans-serif`;ctx.textAlign='center';
+  ctx.fillText("👑 Tika's Royal Palace 👑",cx2(410),cy2(28));
+}
+function drawCastleThrone(cx2,cy2,sc,wx,wy,big,label){
+  const tw=big?95:60,th=big?90:62;
+  // Throne seat
+  ctx.fillStyle='#9b7220';rr(cx2(wx-tw/2),cy2(wy+th*.4),tw*sc,th*.65*sc,5*sc);ctx.fill();
+  ctx.strokeStyle='#ffd700';ctx.lineWidth=(big?2:1.5)*sc;rr(cx2(wx-tw/2),cy2(wy+th*.4),tw*sc,th*.65*sc,5*sc);ctx.stroke();
+  // Throne back
+  ctx.fillStyle='#b88c28';rr(cx2(wx-tw/2),cy2(wy),tw*sc,th*.55*sc,5*sc);ctx.fill();
+  ctx.strokeStyle='#ffd700';ctx.lineWidth=(big?2:1.5)*sc;rr(cx2(wx-tw/2),cy2(wy),tw*sc,th*.55*sc,5*sc);ctx.stroke();
+  // Gem on back
+  if(big){ctx.fillStyle='#ff3090';ctx.beginPath();ctx.arc(cx2(wx),cy2(wy+th*.12),6*sc,0,Math.PI*2);ctx.fill();}
+  else{ctx.fillStyle='#c8a000';ctx.beginPath();ctx.arc(cx2(wx),cy2(wy+th*.12),4*sc,0,Math.PI*2);ctx.fill();}
+  // Dog emoji sitting on throne
+  const emojiSize=big?30:22;
+  ctx.font=`${emojiSize*sc}px serif`;ctx.textAlign='center';
+  ctx.fillText(big?'🐕':'🐶',cx2(wx),cy2(wy+th*.85));
+  if(big){ctx.font=`${18*sc}px serif`;ctx.fillText('👑',cx2(wx),cy2(wy+th*.05));}
+  // Label
+  ctx.fillStyle='rgba(255,255,255,.92)';rr(cx2(wx-(big?42:32)),cy2(wy+th+8),( big?84:64)*sc,15*sc,7*sc);ctx.fill();
+  ctx.fillStyle='#5c3a00';ctx.font=`bold ${(big?9:7)*sc}px "Nunito",sans-serif`;ctx.textAlign='center';
+  ctx.fillText(label,cx2(wx),cy2(wy+th+19));
 }
 
 function drawAmourCafe(){
@@ -1031,6 +1268,7 @@ function drawMinimap(){
 function draw(){
   ctx.clearRect(0,0,W,H);
   if(gst==='cafe'){drawCafe();return;}
+  if(gst==='castle'){drawCastle();return;}
   drawGround();
   drawTennisCourt();
   drawEmbassy();
@@ -1042,11 +1280,13 @@ function draw(){
     ctx.fillStyle='#fff176';ctx.beginPath();ctx.arc(sxf(f.x),syf(f.y),f.r*.38,0,Math.PI*2);ctx.fill();
   });
   drawFountain(MW/2,MH/2-40);
+  drawCastleHouse(660,770);
   const sprites=[
     ...TREES.map(t=>({y:t.y,fn:()=>drawTree(t.x,t.y)})),
     ...NPCS.map(n=>({y:n.y,fn:()=>drawNPC(n)})),
     {y:pk.y,fn:drawPeacock},
     {y:ALVARO_CHAR.visible?ALVARO_CHAR.y:-9999,fn:drawAlvaroChar},
+    ...DOGS.map(d=>({y:d.y,fn:()=>drawDog(d)})),
     {y:pl.y,fn:drawPlayer},
   ];
   sprites.sort((a,b)=>a.y-b.y);sprites.forEach(s=>s.fn());
