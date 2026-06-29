@@ -130,6 +130,27 @@ const FLOWERS=(()=>{
   return a;
 })();
 
+const LILIES=[
+  // Top area
+  {x:130,y:155,c:'#ff80c0'},{x:620,y:170,c:'#e0aaff'},{x:800,y:120,c:'#ffb3d9'},
+  {x:1000,y:150,c:'#ff80c0'},{x:1230,y:160,c:'#d4aaff'},{x:620,y:240,c:'#ffc0e0'},
+  // Left side
+  {x:100,y:500,c:'#e0aaff'},{x:110,y:680,c:'#ffb3d9'},{x:95,y:860,c:'#ff80c0'},
+  // Center area
+  {x:550,y:400,c:'#ffc0e0'},{x:720,y:520,c:'#e0aaff'},{x:650,y:750,c:'#ff80c0'},
+  {x:1050,y:400,c:'#ffb3d9'},{x:1150,y:580,c:'#e0aaff'},{x:800,y:860,c:'#ffc0e0'},
+  {x:1000,y:700,c:'#ff80c0'},{x:750,y:630,c:'#d4aaff'},{x:900,y:490,c:'#ffb3d9'},
+  // Right side
+  {x:1750,y:480,c:'#ffc0e0'},{x:1760,y:650,c:'#ff80c0'},{x:1740,y:820,c:'#e0aaff'},
+  // Bottom area
+  {x:200,y:1160,c:'#ffb3d9'},{x:600,y:1180,c:'#e0aaff'},{x:800,y:1150,c:'#ff80c0'},
+  {x:1000,y:1200,c:'#ffc0e0'},{x:1200,y:1160,c:'#ffb3d9'},{x:1450,y:1240,c:'#e0aaff'},
+  // Near tennis court
+  {x:500,y:320,c:'#ff80c0'},{x:520,y:410,c:'#e0aaff'},
+  // Near fountain
+  {x:820,y:720,c:'#ffc0e0'},{x:1080,y:710,c:'#ffb3d9'},
+];
+
 /* ─── NPCs ─── */
 const NPCS=[
   {id:0,x:900,y:620,col:'#ff9a3c',hat:'#c0392b',name:'Old Rajan 🧓',
@@ -1183,6 +1204,31 @@ function drawKissSpot(wx,wy){
   ctx.fillText('First Kiss Spot 💋',x,y+31);
 }
 
+function drawLily(wx,wy,color){
+  if(!vis(wx,wy,20)) return;
+  const x=sxf(wx),y=syf(wy);
+  const sway=Math.sin(Date.now()/1200+wx*.05)*.8;
+  // Stem
+  ctx.strokeStyle='#5a8a3a';ctx.lineWidth=1.5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x,y+14);ctx.quadraticCurveTo(x+sway*3,y+6,x+sway,y-2);ctx.stroke();
+  // Leaves
+  ctx.fillStyle='#6aaa4a';
+  ctx.beginPath();ctx.ellipse(x-6+sway,y+4,7,3,-.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+6+sway,y+8,7,3,.5,0,Math.PI*2);ctx.fill();
+  // 6 petals
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2+sway*.1;
+    ctx.save();ctx.translate(x+sway,y-2);ctx.rotate(a);
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.ellipse(0,-6,3.5,7,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=.6;ctx.beginPath();ctx.ellipse(0,-6,3.5,7,0,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
+  // Center
+  ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(x+sway,y-2,3.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ff8800';ctx.beginPath();ctx.arc(x+sway,y-2,2,0,Math.PI*2);ctx.fill();
+}
+
 function drawTree(wx,wy){
   if(!vis(wx,wy)) return;
   const x=sxf(wx),y=syf(wy);
@@ -1307,6 +1353,7 @@ function draw(){
   drawEmbassy();
   drawKhanMarket();
   drawAmourCafe();
+  LILIES.forEach(l=>drawLily(l.x,l.y,l.c));
   FLOWERS.forEach(f=>{
     if(!vis(f.x,f.y,20)) return;
     ctx.fillStyle=f.c;ctx.beginPath();ctx.arc(sxf(f.x),syf(f.y),f.r,0,Math.PI*2);ctx.fill();
