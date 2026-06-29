@@ -479,7 +479,7 @@ function updateCafe(){
       document.getElementById('cafe-msg').style.display='block';
     }
   }
-  if(cafeScene!==0) return;
+  if(cafeScene>=1&&cafeScene<5) return; // freeze player during cinematic only
   // Walk around
   let dx=0,dy=0;
   if(K['ArrowLeft']||K['a']||K['A']) dx-=1;if(K['ArrowRight']||K['d']||K['D']) dx+=1;
@@ -492,9 +492,11 @@ function updateCafe(){
   } else cpPl.moving=false;
   const memCX=CAFE_MEM.x+CAFE_MEM.w/2,memCY=CAFE_MEM.y+CAFE_MEM.h;
   const memDist=Math.hypot(cpPl.x-memCX,cpPl.y-memCY);
-  document.getElementById('hint').style.display=memDist<90?'block':'none';
-  if(memDist<90) document.getElementById('hint').textContent='Press E to approach the memory table';
-  // Walk into exit
+  if(cafeScene===0){
+    document.getElementById('hint').style.display=memDist<90?'block':'none';
+    if(memDist<90) document.getElementById('hint').textContent='Press E to approach the memory table';
+  }
+  // Walk into exit after memory done
   if(cafeScene===5&&aabb(cpPl.x-10,cpPl.y-13,20,26,CAFE_EXIT.x,CAFE_EXIT.y,CAFE_EXIT.w,CAFE_EXIT.h)){
     exitCafe();
   }
