@@ -38,10 +38,30 @@ h1{font-family:'Pacifico',cursive;color:#c2006e;font-size:1.9rem;text-shadow:2px
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
 #dpad{position:fixed;bottom:18px;left:18px;z-index:35;display:none}
 .drow{display:flex;align-items:center}
-.db{width:48px;height:48px;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border:2px solid rgba(255,140,195,.5);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;margin:2px;color:#c2006e;-webkit-tap-highlight-color:transparent}
-.db:active,.db.p{background:rgba(255,130,190,.4)}
-.dc{width:48px;height:48px}
-#tbtn{position:fixed;bottom:18px;right:18px;width:58px;height:58px;background:linear-gradient(135deg,#ff6eb4,#ff1f95);border:none;border-radius:50%;z-index:35;font-size:1.5rem;cursor:pointer;display:none;box-shadow:0 4px 16px rgba(255,30,140,.4);-webkit-tap-highlight-color:transparent}
+.db{width:54px;height:54px;background:rgba(255,255,255,.75);backdrop-filter:blur(8px);border:2px solid rgba(255,140,195,.5);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;margin:2px;color:#c2006e;-webkit-tap-highlight-color:transparent;touch-action:none}
+.db:active,.db.p{background:rgba(255,130,190,.45)}
+.dc{width:54px;height:54px}
+#tbtn{position:fixed;bottom:22px;right:16px;width:64px;height:64px;background:linear-gradient(135deg,#ff6eb4,#ff1f95);border:none;border-radius:50%;z-index:35;font-size:1.6rem;cursor:pointer;display:none;box-shadow:0 4px 16px rgba(255,30,140,.4);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(pointer:coarse){#dpad{display:none!important}}
+@media(max-width:768px){
+  .db{width:62px;height:62px;font-size:1.55rem;border-radius:16px}
+  .dc{width:62px;height:62px}
+  #tbtn{width:70px;height:70px;font-size:1.8rem;bottom:26px;right:14px}
+  #hint{bottom:190px!important;font-size:.8rem;padding:.3rem 1rem}
+  #dlg{padding:.75rem .85rem .9rem}
+  #dlg-name{font-size:.95rem}
+  #dlg-txt{font-size:.85rem;margin-bottom:.5rem}
+  .opt{font-size:.82rem;padding:.38rem .55rem;min-width:90px}
+  #dlg-fb{font-size:.82rem}
+  .card{padding:1.4rem 1.1rem;border-radius:20px;max-height:92vh;overflow-y:auto}
+  h1{font-size:1.55rem}
+  .sub{font-size:.82rem}
+  .btn{font-size:.92rem;padding:.65rem 1.5rem}
+  #hud{padding:.4rem .7rem}
+  .hpill{font-size:.8rem;padding:.22rem .6rem}
+  #cafe-msg{padding:1rem 1.3rem;max-width:95vw}
+  #cafe-msg-txt{font-size:.88rem}
+}
 .ltitle{font-family:'Pacifico',cursive;font-size:2.1rem;color:#c2006e;text-shadow:3px 4px 0 rgba(255,160,210,.8);animation:hb 1.4s ease-in-out infinite;line-height:1.25;margin-bottom:.7rem}
 @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.07)}28%{transform:scale(1)}42%{transform:scale(1.04)}}
 .sway{display:block;font-size:1.5rem;letter-spacing:.2rem;animation:sw 3s ease-in-out infinite}
@@ -87,7 +107,7 @@ h1{font-family:'Pacifico',cursive;color:#c2006e;font-size:1.9rem;text-shadow:2px
   <span class="big-e">🌸</span>
   <h1>Beatrice's World</h1>
   <p class="sub">Explore New Delhi! Find 4 villagers, answer their questions,<br>visit Amour Café, then find Alvaro for a surprise! 💕</p>
-  <p class="sub" style="font-size:.8rem;opacity:.8">Arrow keys / WASD to move · E to interact · D-pad on mobile</p>
+  <p class="sub" style="font-size:.8rem;opacity:.8">Arrow keys / WASD · E to interact · Touch &amp; drag to move on mobile · Tap right side to interact</p>
   <button class="btn" id="btn-start">Start Adventure! 💖</button>
 </div></div>
 
@@ -267,6 +287,51 @@ window.addEventListener('keyup',e=>K[e.key]=false);
 });
 document.getElementById('tbtn').addEventListener('click',tryInteract);
 document.getElementById('tbtn').addEventListener('touchstart',e=>{e.preventDefault();tryInteract();},{passive:false});
+
+/* ─── VIRTUAL JOYSTICK ─── */
+const joy={active:false,id:-1,bx:0,by:0,tx:0,ty:0};
+const JR=52; // joystick radius
+let joyDX=0,joyDY=0;
+const cvs=document.getElementById('c');
+cvs.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  Array.from(e.changedTouches).forEach(t=>{
+    // Right side tap = interact
+    if(t.clientX>W*.6&&!joy.active){tryInteract();return;}
+    // Left/center = joystick
+    if(!joy.active){
+      joy.active=true;joy.id=t.identifier;
+      joy.bx=t.clientX;joy.by=t.clientY;
+      joy.tx=t.clientX;joy.ty=t.clientY;
+    }
+  });
+},{passive:false});
+cvs.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  Array.from(e.changedTouches).forEach(t=>{
+    if(t.identifier===joy.id){
+      joy.tx=t.clientX;joy.ty=t.clientY;
+      const dx=joy.tx-joy.bx,dy=joy.ty-joy.by,len=Math.hypot(dx,dy);
+      if(len>JR){joy.tx=joy.bx+dx/len*JR;joy.ty=joy.by+dy/len*JR;}
+    }
+  });
+},{passive:false});
+cvs.addEventListener('touchend',e=>{
+  Array.from(e.changedTouches).forEach(t=>{
+    if(t.identifier===joy.id){joy.active=false;joy.id=-1;joyDX=0;joyDY=0;}
+  });
+});
+function updateJoy(){
+  if(joy.active){joyDX=(joy.tx-joy.bx)/JR;joyDY=(joy.ty-joy.by)/JR;}
+  else{joyDX=0;joyDY=0;}
+}
+function drawJoy(){
+  if(!joy.active) return;
+  ctx.globalAlpha=.35;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(joy.bx,joy.by,JR,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(255,140,195,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.bx,joy.by,JR,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=.75;ctx.fillStyle='#ff6eb4';ctx.beginPath();ctx.arc(joy.tx,joy.ty,22,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+}
 
 /* ─── COLLISION ─── */
 function aabb(ax,ay,aw,ah,bx,by,bw,bh){return ax<bx+bw&&ax+aw>bx&&ay<by+bh&&ay+ah>by;}
@@ -453,10 +518,10 @@ function showEmbassyMem(){
 function enterCastle(){gst='castle';casPl.x=410;casPl.y=420;casPl.moving=false;casPl.wt=0;document.getElementById('hint').style.display='none';}
 function exitCastle(){gst='playing';document.getElementById('hint').style.display='none';}
 function updateCastle(){
-  let dx=0,dy=0;
+  let dx=joyDX,dy=joyDY;
   if(K['ArrowLeft']||K['a']||K['A']) dx-=1;if(K['ArrowRight']||K['d']||K['D']) dx+=1;
   if(K['ArrowUp']||K['w']||K['W']) dy-=1;if(K['ArrowDown']||K['s']||K['S']) dy+=1;
-  if(dx&&dy){dx*=.707;dy*=.707;}
+  const cl=Math.hypot(dx,dy);if(cl>1){dx/=cl;dy/=cl;}
   if(dx||dy){
     const nx=casPl.x+dx*SPD,ny=casPl.y+dy*SPD;
     if(nx>12&&nx<CAS_W-12) casPl.x=nx;
@@ -561,13 +626,14 @@ document.getElementById('btn-kiss-replay').onclick=startGame;
 
 /* ─── UPDATE ─── */
 function update(){
+  updateJoy();
   if(gst==='cafe'){updateCafe();return;}
   if(gst==='castle'){updateCastle();return;}
   if(gst!=='playing') return;
-  let dx=0,dy=0;
+  let dx=joyDX,dy=joyDY;
   if(K['ArrowLeft']||K['a']||K['A']) dx-=1;if(K['ArrowRight']||K['d']||K['D']) dx+=1;
   if(K['ArrowUp']||K['w']||K['W']) dy-=1;if(K['ArrowDown']||K['s']||K['S']) dy+=1;
-  if(dx&&dy){dx*=.707;dy*=.707;}
+  const len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len;}
   if(dx||dy){
     if(canGo(pl.x+dx*SPD,pl.y)) pl.x+=dx*SPD;
     if(canGo(pl.x,pl.y+dy*SPD)) pl.y+=dy*SPD;
@@ -608,10 +674,10 @@ function updateCafe(){
   }
   if(cafeScene>=1&&cafeScene<5) return; // freeze player during cinematic only
   // Walk around
-  let dx=0,dy=0;
+  let dx=joyDX,dy=joyDY;
   if(K['ArrowLeft']||K['a']||K['A']) dx-=1;if(K['ArrowRight']||K['d']||K['D']) dx+=1;
   if(K['ArrowUp']||K['w']||K['W']) dy-=1;if(K['ArrowDown']||K['s']||K['S']) dy+=1;
-  if(dx&&dy){dx*=.707;dy*=.707;}
+  const clen=Math.hypot(dx,dy);if(clen>1){dx/=clen;dy/=clen;}
   if(dx||dy){
     if(canGoCafe(cpPl.x+dx*SPD,cpPl.y)) cpPl.x+=dx*SPD;
     if(canGoCafe(cpPl.x,cpPl.y+dy*SPD)) cpPl.y+=dy*SPD;
@@ -1365,8 +1431,8 @@ function drawMinimap(){
 /* ─── MAIN DRAW ─── */
 function draw(){
   ctx.clearRect(0,0,W,H);
-  if(gst==='cafe'){drawCafe();return;}
-  if(gst==='castle'){drawCastle();return;}
+  if(gst==='cafe'){drawCafe();drawJoy();return;}
+  if(gst==='castle'){drawCastle();drawJoy();return;}
   drawGround();
   drawTennisCourt();
   drawEmbassy();
@@ -1392,6 +1458,7 @@ function draw(){
   parts.forEach(p=>{ctx.globalAlpha=p.life/p.max;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(sxf(p.x),syf(p.y),p.r,0,Math.PI*2);ctx.fill();});
   ctx.globalAlpha=1;
   drawMinimap();
+  drawJoy();
 }
 
 (function loop(){update();draw();requestAnimationFrame(loop);})();
