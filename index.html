@@ -1287,19 +1287,38 @@ function drawAlvaroChar(){
 
 function drawPlayer(){
   const x=sxf(pl.x),y=syf(pl.y);
+  // Shadow
   ctx.fillStyle='rgba(0,0,0,.12)';ctx.beginPath();ctx.ellipse(x,y+4,13,5,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#3d2b1f';
+  // Long brown hair BEHIND body
+  ctx.fillStyle='#6b3510';
+  ctx.beginPath();ctx.moveTo(x-9,y-56);ctx.quadraticCurveTo(x-18,y-30,x-15,y-5);ctx.quadraticCurveTo(x-17,y+6,x-12,y+8);ctx.quadraticCurveTo(x-9,y+2,x-10,y-14);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+9,y-56);ctx.quadraticCurveTo(x+18,y-30,x+15,y-5);ctx.quadraticCurveTo(x+17,y+6,x+12,y+8);ctx.quadraticCurveTo(x+9,y+2,x+10,y-14);ctx.closePath();ctx.fill();
+  // White pants / legs
+  ctx.fillStyle='#f0f0f8';
   ctx.save();ctx.translate(x-5,y-10);ctx.rotate(pl.moving?Math.sin(pl.wt*2)*.25:0);ctx.fillRect(-4,0,7,14);ctx.restore();
   ctx.save();ctx.translate(x+5,y-10);ctx.rotate(pl.moving?-Math.sin(pl.wt*2)*.25:0);ctx.fillRect(-3,0,7,14);ctx.restore();
+  // Pink top
   ctx.fillStyle='#ff6eb4';rr(x-11,y-34,22,24,6);ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.25)';rr(x-9,y-32,10,10,4);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.28)';rr(x-9,y-32,10,9,4);ctx.fill();
+  // Face
   ctx.fillStyle='#fddbb4';ctx.beginPath();ctx.arc(x,y-44,13,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#3d2b1f';ctx.beginPath();ctx.arc(x,y-48,14,Math.PI+.2,-.2);ctx.fill();
+  // Brown hair cap on top + side strands in front
+  ctx.fillStyle='#6b3510';
+  ctx.beginPath();ctx.arc(x,y-49,14,Math.PI+.15,-.15);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x-12,y-42,4,7,.15,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+12,y-42,4,7,-.15,0,Math.PI*2);ctx.fill();
+  // Eyes
   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x-4,y-45,3.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+4,y-45,3.2,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#333';ctx.beginPath();ctx.arc(x-4,y-45,1.8,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+4,y-45,1.8,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='rgba(255,130,180,.4)';ctx.beginPath();ctx.ellipse(x-8,y-41,4,2.5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(x+8,y-41,4,2.5,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#ff1f95';ctx.beginPath();ctx.arc(x+10,y-55,5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+18,y-55,5,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#ff4da6';ctx.beginPath();ctx.arc(x+14,y-55,3.5,0,Math.PI*2);ctx.fill();
+  // Eyelashes
+  ctx.strokeStyle='#333';ctx.lineWidth=1;
+  [[-6.5,-47.5],[-4,-47.5],[-1.5,-47.5]].forEach(([ex,ey])=>{ctx.beginPath();ctx.moveTo(x+ex,y+ey);ctx.lineTo(x+ex-.5,y+ey-2.5);ctx.stroke();});
+  [[1.5,-47.5],[4,-47.5],[6.5,-47.5]].forEach(([ex,ey])=>{ctx.beginPath();ctx.moveTo(x+ex,y+ey);ctx.lineTo(x+ex+.5,y+ey-2.5);ctx.stroke();});
+  // Cheeks
+  ctx.fillStyle='rgba(255,130,180,.45)';ctx.beginPath();ctx.ellipse(x-8,y-41,4,2.5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(x+8,y-41,4,2.5,0,0,Math.PI*2);ctx.fill();
+  // Pink bow / hair clip
+  ctx.fillStyle='#ff1f95';ctx.beginPath();ctx.arc(x+9,y-59,5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+17,y-59,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ff4da6';ctx.beginPath();ctx.arc(x+13,y-59,3.5,0,Math.PI*2);ctx.fill();
 }
 
 function drawPeacock(){
